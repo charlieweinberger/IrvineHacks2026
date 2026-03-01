@@ -167,7 +167,17 @@ export function OperationsStudio({ initialData }: { initialData: EventData }) {
   const riders = data.participants.filter(
     (p) => !p.driver && p.status !== "cancelled",
   );
-  const unassigned = riders.filter((r) => !r.carId);
+  const driversById = useMemo(
+    () =>
+      new Map(data.participants.filter((p) => p.driver).map((d) => [d.id, d])),
+    [data.participants],
+  );
+  const unassigned = riders.filter((r) => {
+    if (!r.carId) return true;
+    const driverId = r.carId.replace("car-", "");
+    const driver = driversById.get(driverId);
+    return !driver || driver.status === "cancelled";
+  });
 
   function mutate(path: string, init: RequestInit) {
     startTransition(async () => {
@@ -415,13 +425,29 @@ export function OperationsStudio({ initialData }: { initialData: EventData }) {
                                 onChange={(e) => {
                                   const [status, checkInState] =
                                     e.target.value.split("|");
-                                  updateParticipant(participant.id, {
+                                  const updatedPayload: {
+                                    status: EventStatus;
+                                    checkInState: Participant["checkInState"];
+                                    carId?: null;
+                                    seatIndex?: null;
+                                  } = {
                                     status: status as EventStatus,
                                     checkInState:
                                       checkInState === "null"
                                         ? null
                                         : (checkInState as Participant["checkInState"]),
-                                  });
+                                  };
+
+                                  // Clear carpool assignment when cancelled
+                                  if (status === "cancelled") {
+                                    updatedPayload.carId = null;
+                                    updatedPayload.seatIndex = null;
+                                  }
+
+                                  updateParticipant(
+                                    participant.id,
+                                    updatedPayload,
+                                  );
                                 }}
                               >
                                 <optgroup label="Signed Up">

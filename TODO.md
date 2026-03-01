@@ -1,8 +1,4 @@
-- reimagine layout between
-  - spreadsheet table view (e.g. google sheets)
-  - list view (e.g. participants card here)
-  - carpool board
-  - AI insights
+- improve overall layout (participants vs. carpool vs. insights)
 - make sure codebase is organized well
 - review SQLite and see if it's needed
 - make working w/ actual AAC spreadsheets

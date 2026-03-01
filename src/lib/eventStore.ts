@@ -206,6 +206,12 @@ export async function updateParticipantState(
     checkInState: Participant["checkInState"];
   }>,
 ) {
+  // Fetch current participant to check if this is a driver being uncancelled
+  const [currentParticipant] = await db
+    .select()
+    .from(participantState)
+    .where(eq(participantState.participantId, participantId));
+
   const payload: Partial<typeof participantState.$inferInsert> = {
     updatedAt: new Date(),
   };
@@ -226,6 +232,24 @@ export async function updateParticipantState(
     .update(participantState)
     .set(payload)
     .where(eq(participantState.participantId, participantId));
+
+  // If a driver is being uncancelled (from "cancelled" to something else), clear all passengers' seat assignments
+  if (
+    currentParticipant?.status === "cancelled"
+    && typeof updates.status !== "undefined"
+    && updates.status !== "cancelled"
+  ) {
+    const allParticipants = await syncFromSheet();
+    const currentDriver = allParticipants.find((p) => p.id === participantId && p.driver);
+
+    if (currentDriver) {
+      const carId = `car-${participantId}`;
+      await db
+        .update(participantState)
+        .set({ carId: null, seatIndex: null, updatedAt: new Date() })
+        .where(eq(participantState.carId, carId));
+    }
+  }
 
   return getEventData();
 }

@@ -67,7 +67,7 @@ function rowToParticipant(row: SheetRow, idx: number) {
     needsManualReviewNotes,
   } satisfies Omit<
     Participant,
-    "status" | "isOfficer" | "appNotes" | "carId" | "seatIndex" | "checkInState" | "driverCapacityReviewApproved" | "notesReviewApproved"
+    "status" | "isOfficer" | "isPaidMember" | "appNotes" | "carId" | "seatIndex" | "checkInState" | "driverCapacityReviewApproved" | "notesReviewApproved"
   >;
 }
 

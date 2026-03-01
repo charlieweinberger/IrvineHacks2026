@@ -2,6 +2,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Seat } from "@/components/carpool/car-seat";
+import { PaidMemberIcon } from "@/components/shared/paid-member-icon";
 import { getSeatLabel } from "@/lib/seatHelpers";
 import type { Car, Participant } from "@/types";
 
@@ -24,7 +25,12 @@ export function CarVisualization({
     <div className="space-y-3 rounded-lg border border-zinc-200 bg-white p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="font-semibold text-zinc-900">{car.driverName}</h3>
+          <h3 className="font-semibold text-zinc-900 flex items-center gap-1">
+            {car.driverName}
+            {driverParticipant?.isPaidMember && (
+              <PaidMemberIcon size="large" />
+            )}
+          </h3>
           <p className="text-xs text-zinc-500">
             {occupiedCount} / {seatCount} seats
           </p>

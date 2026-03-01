@@ -38,6 +38,8 @@ export function useFilteredParticipants(
     // Officer filter
     if (filterOfficer === "officer") {
       result = result.filter((p) => p.isOfficer);
+    } else if (filterOfficer === "paid-member") {
+      result = result.filter((p) => p.isPaidMember);
     } else if (filterOfficer === "not-officer") {
       result = result.filter((p) => !p.isOfficer);
     }

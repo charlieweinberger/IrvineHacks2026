@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { EventStatus } from "@/types";
 
-export type FilterOfficer = "all" | "officer" | "not-officer";
+export type FilterOfficer = "all" | "officer" | "paid-member" | "not-officer";
 export type FilterRole = "all" | "driver" | "self-driver" | "rider";
 export type FilterStatus = "all" | EventStatus;
 export type SortBy = "name" | "status";
@@ -49,7 +49,8 @@ export function FilterBar({
         >
           <option value="all">All Members</option>
           <option value="officer">Officers</option>
-          <option value="not-officer">Not Officers</option>
+          <option value="paid-member">Paid Members</option>
+          <option value="not-officer">Regular Members</option>
         </select>
         <select
           className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm"

@@ -143,7 +143,7 @@ export function OperationsStudio({
 
   return (
     <main className="min-h-screen bg-zinc-100 p-4 md:p-6">
-      <div className="mx-auto max-w-[1800px] space-y-5">
+      <div className="mx-auto max-w-450 space-y-5">
         <header className="rounded-xl border border-zinc-200 bg-white p-4">
           <div className="flex items-center justify-between">
             <div>

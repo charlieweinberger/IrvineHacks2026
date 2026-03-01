@@ -1,6 +1,7 @@
 "use client";
 
 import { OfficerIcon } from "@/components/shared/officer-icon";
+import { PaidMemberIcon } from "@/components/shared/paid-member-icon";
 import { Badge } from "@/components/ui/badge";
 import { getStatusSelectClass } from "@/lib/statusColors";
 import { getParticipantRoleLabel } from "@/lib/participantHelpers";
@@ -46,6 +47,9 @@ export function ParticipantTable({
               <td className="px-3 py-2 text-zinc-900">
                 <div className="flex items-center gap-2">
                   {participant.name}
+                  {participant.isPaidMember && (
+                    <PaidMemberIcon size="large" />
+                  )}
                   {participant.isOfficer && <OfficerIcon className="h-4 w-4" />}
                 </div>
               </td>

@@ -3,6 +3,7 @@
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { PreferredPartnersTooltip } from "@/components/shared/preferred-partners-tooltip";
+import { PaidMemberIcon } from "@/components/shared/paid-member-icon";
 import {
   getStatusBorderColor,
   getStatusDarkTextColor,
@@ -39,8 +40,11 @@ export function DraggableRider({ participant }: DraggableRiderProps) {
       {...attributes}
       type="button"
     >
-      <span className={getStatusDarkTextColor(participant.status)}>
+      <span className={cn("flex items-center gap-1", getStatusDarkTextColor(participant.status))}>
         {participant.name}
+        {participant.isPaidMember && (
+          <PaidMemberIcon size="small" />
+        )}
       </span>
       <PreferredPartnersTooltip participant={participant} />
     </button>

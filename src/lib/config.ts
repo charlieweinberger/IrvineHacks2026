@@ -21,8 +21,8 @@ export function isOfficerEmail(email: string): boolean {
   return OFFICER_EMAILS.has(email.toLowerCase());
 }
 
-export const MEMBER_EMAILS: Set<string> = new Set([
-  // Add member emails here
+export const PAID_MEMBER_EMAILS: Set<string> = new Set([
+  // Add paid member emails here
   "gdodge@uci.edu",
   "nhdo2@uci.edu",
   "pnkim@uci.edu",
@@ -92,6 +92,6 @@ export const MEMBER_EMAILS: Set<string> = new Set([
   "wharring@uci.edu",
 ]);
 
-export function isMemberEmail(email: string): boolean {
-  return MEMBER_EMAILS.has(email.toLowerCase());
+export function isPaidMemberEmail(email: string): boolean {
+  return PAID_MEMBER_EMAILS.has(email.toLowerCase());
 }

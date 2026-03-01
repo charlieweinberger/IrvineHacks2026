@@ -10,6 +10,7 @@ import { ParticipantPreferences } from "@/components/participants/participant-pr
 import { ParticipantSeats } from "@/components/participants/participant-seats";
 import { ParticipantDriverStatus } from "@/components/participants/participant-driver-status";
 import { ParticipantRoleBadges } from "@/components/participants/participant-role-badges";
+import { PaidMemberIcon } from "@/components/shared/paid-member-icon";
 import type { EventStatus, Participant } from "@/types";
 
 export function ParticipantCard({
@@ -71,7 +72,12 @@ export function ParticipantCard({
     <Card className="transition-all hover:shadow-md">
       <CardHeader className="flex flex-row items-center justify-between gap-2">
         <div>
-          <CardTitle>{participant.name}</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            {participant.name}
+            {participant.isPaidMember && (
+              <PaidMemberIcon size="large" />
+            )}
+          </CardTitle>
           <p className="text-xs text-zinc-500">{participant.email}</p>
           <p className="text-xs text-zinc-500">{participant.phone}</p>
         </div>

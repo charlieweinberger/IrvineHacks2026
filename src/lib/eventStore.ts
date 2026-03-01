@@ -4,7 +4,7 @@ import { cars, participantState } from "@/lib/db/schema";
 import { fetchSheetParticipants } from "@/lib/googleSheets";
 import { generateMockInsights } from "@/lib/aiInsights";
 import { optimizeCarpoolAssignments } from "@/lib/carpoolOptimizer";
-import { isOfficerEmail } from "@/lib/config";
+import { isOfficerEmail, isPaidMemberEmail } from "@/lib/config";
 import type {
   DashboardStats,
   EventData,
@@ -31,6 +31,7 @@ function toParticipant(
 ): Participant {
   // Auto-determine officer status based on email
   const isOfficer = isOfficerEmail(sheet.email);
+  const isPaidMember = isPaidMemberEmail(sheet.email);
 
   // Parse preferredRidePartners from database (comma-separated string) or use sheet value
   const preferredRidePartners = local?.preferredRidePartners
@@ -61,6 +62,7 @@ function toParticipant(
     preferredRidePartners,
     status: (local?.status as EventStatus) ?? "awaiting",
     isOfficer,
+    isPaidMember,
     appNotes: local?.appNotes ?? "",
     carId: local?.carId ?? null,
     seatIndex: local?.seatIndex ?? null,
@@ -162,6 +164,7 @@ export async function syncFromSheet(sheetId?: string) {
       needsManualReviewNotes: false,
       status: local.status as EventStatus,
       isOfficer: local.isOfficer,
+      isPaidMember: isPaidMemberEmail(local.email),
       appNotes: local.appNotes,
       carId: local.carId,
       seatIndex: local.seatIndex,

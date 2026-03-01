@@ -22,6 +22,7 @@ export interface Participant {
 
   status: EventStatus;
   isOfficer: boolean;
+  isPaidMember: boolean;
   appNotes: string;
   carId: string | null;
   seatIndex: number | null;

@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PreferredPartnersTooltip } from "@/components/shared/preferred-partners-tooltip";
+import { PaidMemberIcon } from "@/components/shared/paid-member-icon";
 import {
   getStatusBorderColor,
   getStatusDarkTextColor,
@@ -30,8 +31,11 @@ export function SelfDriversLane({ selfDrivers }: SelfDriversLaneProps) {
               getStatusLightBgColor(participant.status),
             )}
           >
-            <span className={getStatusDarkTextColor(participant.status)}>
+            <span className={cn("flex items-center gap-1", getStatusDarkTextColor(participant.status))}>
               {participant.name}
+              {participant.isPaidMember && (
+                <PaidMemberIcon size="small" />
+              )}
             </span>
             <PreferredPartnersTooltip participant={participant} />
           </div>

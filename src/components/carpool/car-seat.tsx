@@ -4,6 +4,7 @@ import { useDraggable, useDroppable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { PreferredPartnersTooltip } from "@/components/shared/preferred-partners-tooltip";
 import { OfficerIcon } from "@/components/shared/officer-icon";
+import { PaidMemberIcon } from "@/components/shared/paid-member-icon";
 import {
   getStatusBorderColor,
   getStatusLightBgColor,
@@ -48,6 +49,9 @@ export function DraggableOccupant({ occupant }: DraggableOccupantProps) {
         )}
       >
         {occupant.name}
+        {occupant.isPaidMember && (
+          <PaidMemberIcon size="small" />
+        )}
         {occupant.isOfficer && <OfficerIcon className="h-3 w-3" />}
         <PreferredPartnersTooltip participant={occupant} />
       </span>
@@ -93,6 +97,9 @@ export function Seat({ seatId, seatLabel, occupant, isDriver }: SeatProps) {
               )}
             >
               {occupant.name}
+              {occupant.isPaidMember && (
+                <PaidMemberIcon size="small" />
+              )}
               {occupant.isOfficer && <OfficerIcon className="h-3 w-3" />}
               <PreferredPartnersTooltip participant={occupant} />
             </span>

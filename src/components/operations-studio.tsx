@@ -5,6 +5,7 @@ import Link from "next/link";
 import { DndContext, DragEndEvent, closestCenter } from "@dnd-kit/core";
 import { DashboardSummary } from "@/components/dashboard/dashboard-summary";
 import { InsightPanel } from "@/components/dashboard/insight-panel";
+import { ManualReviewPanel } from "@/components/dashboard/manual-review-panel";
 import { ParticipantList } from "@/components/participants/participant-list";
 import { ParticipantTable } from "@/components/participants/participant-table";
 import { CarVisualization } from "@/components/carpool/car-visualization";
@@ -280,6 +281,10 @@ export function OperationsStudio({
                     />
                   </CardContent>
                 </Card>
+                <ManualReviewPanel
+                  participants={data.participants}
+                  onUpdateParticipant={updateParticipant}
+                />
                 <InsightPanel insights={data.insights} />
               </div>
             </div>

@@ -51,7 +51,7 @@ export const ParticipantNotes = forwardRef<
           )}
           {needsReview && approved && (
             <Badge variant="success" className="text-[10px] py-0 px-1.5">
-              Approved
+              Reviewed
             </Badge>
           )}
           {needsReview && forceEditMode && (
@@ -62,7 +62,7 @@ export const ParticipantNotes = forwardRef<
                 onChange={(e) => handleApprovalChange(e.target.checked)}
                 className="h-3.5 w-3.5 rounded border-zinc-300"
               />
-              <span className="text-[10px] text-zinc-600">Mark as approved</span>
+              <span className="text-[10px] text-zinc-600">Mark as reviewed</span>
             </label>
           )}
         </div>

@@ -1,7 +1,13 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import { DndContext, DragEndEvent, closestCenter, useDraggable, useDroppable } from "@dnd-kit/core";
+import {
+  DndContext,
+  DragEndEvent,
+  closestCenter,
+  useDraggable,
+  useDroppable,
+} from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { Search } from "lucide-react";
 import { DashboardSummary } from "@/components/dashboard-summary";
@@ -14,9 +20,10 @@ import { Input } from "@/components/ui/input";
 import type { Car, EventData, EventStatus, Participant } from "@/types";
 
 function DraggableRider({ participant }: { participant: Participant }) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
-    id: participant.id,
-  });
+  const { attributes, listeners, setNodeRef, transform, isDragging } =
+    useDraggable({
+      id: participant.id,
+    });
 
   const style = {
     transform: CSS.Translate.toString(transform),
@@ -75,6 +82,15 @@ async function fetchJson(path: string, init?: RequestInit) {
 export function OperationsStudio({ initialData }: { initialData: EventData }) {
   const [data, setData] = useState(initialData);
   const [searchTerm, setSearchTerm] = useState("");
+  const [filterRole, setFilterRole] = useState<
+    "all" | "officer" | "driver" | "rider"
+  >("all");
+  const [filterStatus, setFilterStatus] = useState<"all" | EventStatus>("all");
+  const [filterTextSent, setFilterTextSent] = useState<
+    "all" | "sent" | "not-sent"
+  >("all");
+  const [sortBy, setSortBy] = useState<"name" | "status">("name");
+  const [viewMode, setViewMode] = useState<"list" | "table">("list");
   const [isPending, startTransition] = useTransition();
 
   const participantsById = useMemo(
@@ -83,15 +99,74 @@ export function OperationsStudio({ initialData }: { initialData: EventData }) {
   );
 
   const filteredParticipants = useMemo(() => {
+    let result = data.participants;
+
+    // Search filter
     const term = searchTerm.toLowerCase().trim();
-    if (!term) return data.participants;
+    if (term) {
+      result = result.filter((participant) =>
+        `${participant.name} ${participant.email}`.toLowerCase().includes(term),
+      );
+    }
 
-    return data.participants.filter((participant) =>
-      `${participant.name} ${participant.email}`.toLowerCase().includes(term),
-    );
-  }, [data.participants, searchTerm]);
+    // Role filter
+    if (filterRole === "officer") {
+      result = result.filter((p) => p.isOfficer);
+    } else if (filterRole === "driver") {
+      result = result.filter((p) => p.driver);
+    } else if (filterRole === "rider") {
+      result = result.filter((p) => !p.driver);
+    }
 
-  const riders = data.participants.filter((p) => !p.driver && p.status !== "cancelled");
+    // Status filter
+    if (filterStatus !== "all") {
+      result = result.filter((p) => p.status === filterStatus);
+    }
+
+    // Text sent filter
+    if (filterTextSent === "sent") {
+      result = result.filter(
+        (p) =>
+          p.status === "text_sent" ||
+          p.status === "ambiguous" ||
+          p.status === "confirmed" ||
+          p.status === "cancelled" ||
+          p.status === "present",
+      );
+    } else if (filterTextSent === "not-sent") {
+      result = result.filter((p) => p.status === "awaiting");
+    }
+
+    // Sort
+    if (sortBy === "name") {
+      result = [...result].sort((a, b) => a.name.localeCompare(b.name));
+    } else if (sortBy === "status") {
+      const statusOrder: Record<EventStatus, number> = {
+        awaiting: 0,
+        text_sent: 1,
+        ambiguous: 2,
+        confirmed: 3,
+        present: 4,
+        cancelled: 5,
+      };
+      result = [...result].sort(
+        (a, b) => statusOrder[a.status] - statusOrder[b.status],
+      );
+    }
+
+    return result;
+  }, [
+    data.participants,
+    searchTerm,
+    filterRole,
+    filterStatus,
+    filterTextSent,
+    sortBy,
+  ]);
+
+  const riders = data.participants.filter(
+    (p) => !p.driver && p.status !== "cancelled",
+  );
   const unassigned = riders.filter((r) => !r.carId);
 
   function mutate(path: string, init: RequestInit) {
@@ -138,8 +213,13 @@ export function OperationsStudio({ initialData }: { initialData: EventData }) {
       }
     }
 
-    if (typeof carId === "undefined" || typeof seatIndex === "undefined") return;
-    if (activeParticipant.carId === carId && activeParticipant.seatIndex === seatIndex) return;
+    if (typeof carId === "undefined" || typeof seatIndex === "undefined")
+      return;
+    if (
+      activeParticipant.carId === carId &&
+      activeParticipant.seatIndex === seatIndex
+    )
+      return;
 
     mutate("/api/carpool/assign", {
       method: "POST",
@@ -151,8 +231,12 @@ export function OperationsStudio({ initialData }: { initialData: EventData }) {
     <main className="min-h-screen bg-zinc-100 p-4 md:p-6">
       <div className="mx-auto max-w-7xl space-y-5">
         <header className="rounded-xl border border-zinc-200 bg-white p-4">
-          <h1 className="text-2xl font-bold tracking-tight">Event Operations Studio</h1>
-          <p className="text-sm text-zinc-500">Mission Control for signups, carpools, and live check-in.</p>
+          <h1 className="text-2xl font-bold tracking-tight">
+            Event Operations Studio
+          </h1>
+          <p className="text-sm text-zinc-500">
+            Mission Control for signups, carpools, and live check-in.
+          </p>
         </header>
 
         <DashboardSummary stats={data.stats} />
@@ -160,35 +244,227 @@ export function OperationsStudio({ initialData }: { initialData: EventData }) {
         <div className="grid gap-5 xl:grid-cols-[1.2fr_1fr]">
           <div className="space-y-5">
             <Card>
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Participants</CardTitle>
+                <div className="flex gap-2">
+                  <Button
+                    variant={viewMode === "list" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setViewMode("list")}
+                  >
+                    List
+                  </Button>
+                  <Button
+                    variant={viewMode === "table" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setViewMode("table")}
+                  >
+                    Table
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="mb-3 relative">
-                  <Search className="pointer-events-none absolute left-2 top-2.5 h-4 w-4 text-zinc-400" />
-                  <Input
-                    className="pl-8"
-                    placeholder="Search by name or email"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                </div>
-                <div className="grid gap-3">
-                  {filteredParticipants.map((participant) => (
-                    <ParticipantCard
-                      key={participant.id}
-                      participant={participant}
-                      onStatusChange={(id, status: EventStatus) => updateParticipant(id, { status })}
-                      onSaveNotes={(id, appNotes) => updateParticipant(id, { appNotes })}
+                <div className="mb-3 space-y-3">
+                  <div className="flex flex-wrap gap-2">
+                    <select
+                      className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm"
+                      value={filterRole}
+                      onChange={(e) =>
+                        setFilterRole(e.target.value as typeof filterRole)
+                      }
+                    >
+                      <option value="all">All Roles</option>
+                      <option value="officer">Officers</option>
+                      <option value="driver">Drivers</option>
+                      <option value="rider">Riders</option>
+                    </select>
+                    <select
+                      className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm"
+                      value={filterStatus}
+                      onChange={(e) =>
+                        setFilterStatus(e.target.value as typeof filterStatus)
+                      }
+                    >
+                      <option value="all">All Statuses</option>
+                      <option value="awaiting">Awaiting</option>
+                      <option value="text_sent">Text Sent</option>
+                      <option value="ambiguous">Ambiguous</option>
+                      <option value="confirmed">Confirmed</option>
+                      <option value="cancelled">Cancelled</option>
+                      <option value="present">Present</option>
+                    </select>
+                    <select
+                      className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm"
+                      value={filterTextSent}
+                      onChange={(e) =>
+                        setFilterTextSent(
+                          e.target.value as typeof filterTextSent,
+                        )
+                      }
+                    >
+                      <option value="all">Text Status</option>
+                      <option value="sent">Text Sent</option>
+                      <option value="not-sent">Text Not Sent</option>
+                    </select>
+                    <select
+                      className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm"
+                      value={sortBy}
+                      onChange={(e) =>
+                        setSortBy(e.target.value as typeof sortBy)
+                      }
+                    >
+                      <option value="name">Sort: Name</option>
+                      <option value="status">Sort: Status</option>
+                    </select>
+                  </div>
+                  <div className="relative">
+                    <Search className="pointer-events-none absolute left-2 top-2.5 h-4 w-4 text-zinc-400" />
+                    <Input
+                      className="pl-8"
+                      placeholder="Search by name or email"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
                     />
-                  ))}
+                  </div>
                 </div>
+                {viewMode === "list" ? (
+                  <div className="grid gap-3">
+                    {filteredParticipants.map((participant) => (
+                      <div
+                        key={participant.id}
+                        className={`rounded-lg border-2 ${
+                          participant.status === "text_sent"
+                            ? "border-purple-400 bg-purple-50"
+                            : participant.status === "ambiguous"
+                              ? "border-yellow-400 bg-yellow-50"
+                              : participant.status === "confirmed"
+                                ? "border-green-400 bg-green-50"
+                                : participant.status === "cancelled"
+                                  ? "border-red-400 bg-red-50"
+                                  : participant.status === "present"
+                                    ? "border-blue-400 bg-blue-50"
+                                    : ""
+                        }`}
+                      >
+                        <ParticipantCard
+                          participant={participant}
+                          onStatusChange={(id, status: EventStatus) =>
+                            updateParticipant(id, { status })
+                          }
+                          onSaveNotes={(id, appNotes) =>
+                            updateParticipant(id, { appNotes })
+                          }
+                        />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-zinc-200">
+                          <th className="px-3 py-2 text-left font-semibold text-zinc-900">
+                            Name
+                          </th>
+                          <th className="px-3 py-2 text-left font-semibold text-zinc-900">
+                            Email
+                          </th>
+                          <th className="px-3 py-2 text-left font-semibold text-zinc-900">
+                            Role
+                          </th>
+                          <th className="px-3 py-2 text-left font-semibold text-zinc-900">
+                            Status
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredParticipants.map((participant) => (
+                          <tr
+                            key={participant.id}
+                            className="border-b border-zinc-100 hover:bg-zinc-50"
+                          >
+                            <td
+                              className={`px-3 py-2 ${participant.isOfficer ? "text-blue-600 font-semibold" : "text-zinc-900"}`}
+                            >
+                              {participant.name}
+                            </td>
+                            <td className="px-3 py-2 text-zinc-600 text-xs">
+                              {participant.email}
+                            </td>
+                            <td className="px-3 py-2 text-zinc-600 text-xs">
+                              {participant.driver
+                                ? `Driver (${participant.seats} seat${participant.seats > 1 ? "s" : ""})`
+                                : "Rider"}
+                            </td>
+                            <td className="px-3 py-2">
+                              <select
+                                className={`rounded px-2 py-1 text-xs border font-semibold text-white ${
+                                  participant.status === "text_sent"
+                                    ? "border-purple-400 bg-purple-600"
+                                    : participant.status === "ambiguous"
+                                      ? "border-yellow-400 bg-yellow-500"
+                                      : participant.status === "confirmed"
+                                        ? "border-green-400 bg-green-600"
+                                        : participant.status === "cancelled"
+                                          ? "border-red-400 bg-red-600"
+                                          : participant.status === "present"
+                                            ? "border-blue-400 bg-blue-600"
+                                            : "border-zinc-300 bg-white text-zinc-900"
+                                }`}
+                                value={`${participant.status}|${participant.checkInState}`}
+                                onChange={(e) => {
+                                  const [status, checkInState] =
+                                    e.target.value.split("|");
+                                  updateParticipant(participant.id, {
+                                    status: status as EventStatus,
+                                    checkInState:
+                                      checkInState === "null"
+                                        ? null
+                                        : (checkInState as Participant["checkInState"]),
+                                  });
+                                }}
+                              >
+                                <optgroup label="Signed Up">
+                                  <option value="awaiting|null">
+                                    Signed Up
+                                  </option>
+                                </optgroup>
+                                <optgroup label="Text Sent">
+                                  <option value="text_sent|null">
+                                    Text Sent
+                                  </option>
+                                </optgroup>
+                                <optgroup label="Response">
+                                  <option value="confirmed|null">
+                                    Confirmed
+                                  </option>
+                                  <option value="ambiguous|null">
+                                    Ambiguous Response
+                                  </option>
+                                  <option value="cancelled|null">
+                                    Cancelled
+                                  </option>
+                                </optgroup>
+                                <optgroup label="Present">
+                                  <option value="present|null">Present</option>
+                                </optgroup>
+                              </select>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
 
           <div className="space-y-5">
-            <DndContext collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+            <DndContext
+              collisionDetection={closestCenter}
+              onDragEnd={onDragEnd}
+            >
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
                   <CardTitle>Carpool Board</CardTitle>
@@ -208,7 +484,10 @@ export function OperationsStudio({ initialData }: { initialData: EventData }) {
                 <CardContent className="space-y-3">
                   <UnassignedLane>
                     {unassigned.map((participant) => (
-                      <DraggableRider key={participant.id} participant={participant} />
+                      <DraggableRider
+                        key={participant.id}
+                        participant={participant}
+                      />
                     ))}
                   </UnassignedLane>
                   {data.cars.map((car: Car) => (

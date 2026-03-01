@@ -12,8 +12,8 @@ export function StatusTimeline({
 }) {
   // Response options: mutually exclusive
   const responseOptions = [
-    { value: "ambiguous" as const, label: "Ambiguous" },
     { value: "confirmed" as const, label: "Confirmed" },
+    { value: "ambiguous" as const, label: "Ambiguous" },
     { value: "cancelled" as const, label: "Cancelled" },
   ];
 
@@ -41,7 +41,7 @@ export function StatusTimeline({
             className={cn(
               "flex-1 rounded px-2 py-2 font-semibold transition-colors",
               status === "text_sent"
-                ? "bg-zinc-900 text-white"
+                ? "bg-purple-600 text-white ring-1 ring-purple-400"
                 : "bg-zinc-200 text-zinc-700 hover:bg-zinc-300",
             )}
           >
@@ -54,21 +54,43 @@ export function StatusTimeline({
 
         {/* Response options: Ambiguous / Confirmed / Cancelled */}
         <div className="flex gap-1 flex-1">
-          {responseOptions.map((option) => (
-            <button
-              key={option.value}
-              type="button"
-              onClick={() => onChange(option.value)}
-              className={cn(
-                "flex-1 rounded px-2 py-2 font-semibold transition-colors",
-                status === option.value
-                  ? "bg-blue-600 text-white ring-1 ring-blue-400"
-                  : "bg-zinc-200 text-zinc-700 hover:bg-zinc-300",
-              )}
-            >
-              {option.label}
-            </button>
-          ))}
+          {responseOptions.map((option) => {
+            let bgColor = "bg-zinc-200";
+            let textColor = "text-zinc-700";
+            let ringColor = "";
+
+            if (status === option.value) {
+              if (option.value === "confirmed") {
+                bgColor = "bg-green-600";
+                textColor = "text-white";
+                ringColor = "ring-1 ring-green-400";
+              } else if (option.value === "ambiguous") {
+                bgColor = "bg-yellow-500";
+                textColor = "text-white";
+                ringColor = "ring-1 ring-yellow-400";
+              } else if (option.value === "cancelled") {
+                bgColor = "bg-red-600";
+                textColor = "text-white";
+                ringColor = "ring-1 ring-red-400";
+              }
+            }
+
+            return (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => onChange(option.value)}
+                className={cn(
+                  "flex-1 rounded px-2 py-2 font-semibold transition-colors",
+                  status === option.value
+                    ? `${bgColor} ${textColor} ${ringColor}`
+                    : "bg-zinc-200 text-zinc-700 hover:bg-zinc-300",
+                )}
+              >
+                {option.label}
+              </button>
+            );
+          })}
         </div>
 
         {/* Arrow + Present */}
@@ -82,7 +104,7 @@ export function StatusTimeline({
             status === "cancelled"
               ? "bg-zinc-100 text-zinc-400 cursor-not-allowed"
               : status === "present"
-                ? "bg-emerald-600 text-white ring-1 ring-emerald-400 hover:bg-emerald-700"
+                ? "bg-blue-600 text-white ring-1 ring-blue-400 hover:bg-blue-700"
                 : "bg-zinc-200 text-zinc-700 hover:bg-zinc-300",
           )}
         >

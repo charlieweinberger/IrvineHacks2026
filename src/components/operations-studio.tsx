@@ -328,6 +328,18 @@ export function OperationsStudio({ initialData }: { initialData: EventData }) {
                       <option value="name">Sort: Name</option>
                       <option value="status">Sort: Status</option>
                     </select>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setSearchTerm("");
+                        setFilterRole("all");
+                        setFilterStatus("all");
+                        setFilterTextSent("all");
+                      }}
+                    >
+                      Reset Filters
+                    </Button>
                   </div>
                   <div className="relative">
                     <Search className="pointer-events-none absolute left-2 top-2.5 h-4 w-4 text-zinc-400" />

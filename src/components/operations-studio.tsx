@@ -26,13 +26,14 @@ import {
 } from "@/lib/participantHelpers";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import type { Car, EventData } from "@/types";
 
-export function OperationsStudio({ 
-  initialData, 
+export function OperationsStudio({
+  initialData,
   sheetName,
   sheetId,
-}: { 
+}: {
   initialData: EventData;
   sheetName: string;
   sheetId: string;
@@ -142,13 +143,11 @@ export function OperationsStudio({
 
   return (
     <main className="min-h-screen bg-zinc-100 p-4 md:p-6">
-      <div className="mx-auto max-w-7xl space-y-5">
+      <div className="mx-auto max-w-[1800px] space-y-5">
         <header className="rounded-xl border border-zinc-200 bg-white p-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold tracking-tight">
-                {sheetName}
-              </h1>
+              <h1 className="text-2xl font-bold tracking-tight">{sheetName}</h1>
               <p className="text-sm text-zinc-500">
                 Mission Control for signups, carpools, and live check-in.
               </p>
@@ -159,125 +158,208 @@ export function OperationsStudio({
           </div>
         </header>
 
-        <DashboardSummary stats={data.stats} />
-
-        <div className="grid gap-5 xl:grid-cols-[1.2fr_1fr]">
-          <div className="space-y-5">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>Participants</CardTitle>
-                <div className="flex gap-2">
-                  <Button
-                    variant={viewMode === "list" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setViewMode("list")}
-                  >
-                    List
-                  </Button>
-                  <Button
-                    variant={viewMode === "table" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setViewMode("table")}
-                  >
-                    Table
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <FilterBar
-                  searchTerm={searchTerm}
-                  filterOfficer={filterOfficer}
-                  filterRole={filterRole}
-                  filterStatus={filterStatus}
-                  sortBy={sortBy}
-                  onSearchChange={setSearchTerm}
-                  onFilterOfficerChange={setFilterOfficer}
-                  onFilterRoleChange={setFilterRole}
-                  onFilterStatusChange={setFilterStatus}
-                  onSortByChange={setSortBy}
-                  onReset={handleResetFilters}
-                />
-                {viewMode === "list" ? (
-                  <ParticipantList
-                    participants={filteredParticipants}
-                    onStatusChange={(id, status) =>
-                      updateParticipant(id, { status })
-                    }
-                    onSaveNotes={(id, appNotes) =>
-                      updateParticipant(id, { appNotes })
-                    }
-                    onSavePreferences={(id, preferredRidePartners) =>
-                      updateParticipant(id, { preferredRidePartners })
-                    }
-                    onSaveSeats={(id, seats) =>
-                      updateParticipant(id, { seats })
-                    }
-                    onSaveDriverStatus={(id, driver, selfDriver) =>
-                      updateParticipant(id, { driver, selfDriver })
-                    }
-                    onUpdateParticipant={updateParticipant}
-                  />
-                ) : (
-                  <ParticipantTable
-                    participants={filteredParticipants}
-                    onStatusChange={updateParticipant}
-                  />
-                )}
-              </CardContent>
-            </Card>
+        <Tabs defaultValue="participants" className="w-full">
+          <div className="flex justify-center">
+            <TabsList className="mb-4 space-x-4">
+              <TabsTrigger value="participants">Participants</TabsTrigger>
+              <TabsTrigger value="carpool">Carpool</TabsTrigger>
+              <TabsTrigger value="dashboard">Statistics</TabsTrigger>
+            </TabsList>
           </div>
 
-          <div className="space-y-5">
+          <TabsContent value="participants">
+            <div className="grid gap-5 xl:grid-cols-[1fr_400px]">
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="grid grid-cols-2 gap-5">
+                    <div>
+                      {viewMode === "list" ? (
+                        <ParticipantList
+                          participants={filteredParticipants.slice(
+                            0,
+                            Math.ceil(filteredParticipants.length / 2),
+                          )}
+                          onStatusChange={(id, status) =>
+                            updateParticipant(id, { status })
+                          }
+                          onSaveNotes={(id, appNotes) =>
+                            updateParticipant(id, { appNotes })
+                          }
+                          onSavePreferences={(id, preferredRidePartners) =>
+                            updateParticipant(id, { preferredRidePartners })
+                          }
+                          onSaveSeats={(id, seats) =>
+                            updateParticipant(id, { seats })
+                          }
+                          onSaveDriverStatus={(id, driver, selfDriver) =>
+                            updateParticipant(id, { driver, selfDriver })
+                          }
+                          onUpdateParticipant={updateParticipant}
+                        />
+                      ) : (
+                        <ParticipantTable
+                          participants={filteredParticipants.slice(
+                            0,
+                            Math.ceil(filteredParticipants.length / 2),
+                          )}
+                          onStatusChange={updateParticipant}
+                        />
+                      )}
+                    </div>
+
+                    <div>
+                      {viewMode === "list" ? (
+                        <ParticipantList
+                          participants={filteredParticipants.slice(
+                            Math.ceil(filteredParticipants.length / 2),
+                          )}
+                          onStatusChange={(id, status) =>
+                            updateParticipant(id, { status })
+                          }
+                          onSaveNotes={(id, appNotes) =>
+                            updateParticipant(id, { appNotes })
+                          }
+                          onSavePreferences={(id, preferredRidePartners) =>
+                            updateParticipant(id, { preferredRidePartners })
+                          }
+                          onSaveSeats={(id, seats) =>
+                            updateParticipant(id, { seats })
+                          }
+                          onSaveDriverStatus={(id, driver, selfDriver) =>
+                            updateParticipant(id, { driver, selfDriver })
+                          }
+                          onUpdateParticipant={updateParticipant}
+                        />
+                      ) : (
+                        <ParticipantTable
+                          participants={filteredParticipants.slice(
+                            Math.ceil(filteredParticipants.length / 2),
+                          )}
+                          onStatusChange={updateParticipant}
+                        />
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <div className="space-y-5">
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between">
+                    <CardTitle>Filters</CardTitle>
+                    <div className="flex gap-2">
+                      <Button
+                        variant={viewMode === "list" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setViewMode("list")}
+                      >
+                        List
+                      </Button>
+                      <Button
+                        variant={viewMode === "table" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setViewMode("table")}
+                      >
+                        Table
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <FilterBar
+                      searchTerm={searchTerm}
+                      filterOfficer={filterOfficer}
+                      filterRole={filterRole}
+                      filterStatus={filterStatus}
+                      sortBy={sortBy}
+                      onSearchChange={setSearchTerm}
+                      onFilterOfficerChange={setFilterOfficer}
+                      onFilterRoleChange={setFilterRole}
+                      onFilterStatusChange={setFilterStatus}
+                      onSortByChange={setSortBy}
+                      onReset={handleResetFilters}
+                    />
+                  </CardContent>
+                </Card>
+                <InsightPanel insights={data.insights} />
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="carpool">
             <DndContext
               collisionDetection={closestCenter}
               onDragEnd={onDragEnd}
             >
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-                  <CardTitle>Carpool Board</CardTitle>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() =>
-                      mutate("/api/carpool/auto-assign", {
-                        method: "POST",
-                        body: JSON.stringify({ prioritizeOfficers: true, sheetId }),
-                      })
-                    }
-                  >
-                    Auto Assign
-                  </Button>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="flex gap-3">
-                    <div className="flex-1">
-                      <UnassignedLane>
-                        {unassigned.map((participant) => (
-                          <DraggableRider
-                            key={participant.id}
-                            participant={participant}
-                          />
-                        ))}
-                      </UnassignedLane>
-                    </div>
-                    <div className="flex-1">
-                      <SelfDriversLane selfDrivers={selfDrivers} />
-                    </div>
-                  </div>
-                  {data.cars.map((car: Car) => (
-                    <CarVisualization
-                      key={car.id}
-                      car={car}
-                      participantsById={participantsById}
-                    />
-                  ))}
-                </CardContent>
-              </Card>
-            </DndContext>
+              <div className="grid gap-5 xl:grid-cols-[1fr_400px]">
+                <Card>
+                  <CardContent className="pt-6 space-y-3">
+                    <div className="grid grid-cols-2 gap-5">
+                      <div className="space-y-3">
+                        {data.cars
+                          .slice(0, Math.ceil(data.cars.length / 2))
+                          .map((car: Car) => (
+                            <CarVisualization
+                              key={car.id}
+                              car={car}
+                              participantsById={participantsById}
+                            />
+                          ))}
+                      </div>
 
-            <InsightPanel insights={data.insights} />
-          </div>
-        </div>
+                      <div className="space-y-3">
+                        {data.cars
+                          .slice(Math.ceil(data.cars.length / 2))
+                          .map((car: Car) => (
+                            <CarVisualization
+                              key={car.id}
+                              car={car}
+                              participantsById={participantsById}
+                            />
+                          ))}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <div className="space-y-5">
+                  <Card>
+                    <CardContent className="pt-4">
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        className="w-full"
+                        onClick={() =>
+                          mutate("/api/carpool/auto-assign", {
+                            method: "POST",
+                            body: JSON.stringify({
+                              prioritizeOfficers: true,
+                              sheetId,
+                            }),
+                          })
+                        }
+                      >
+                        Auto Assign
+                      </Button>
+                    </CardContent>
+                  </Card>
+                  <UnassignedLane>
+                    {unassigned.map((participant) => (
+                      <DraggableRider
+                        key={participant.id}
+                        participant={participant}
+                      />
+                    ))}
+                  </UnassignedLane>
+                  <SelfDriversLane selfDrivers={selfDrivers} />
+                </div>
+              </div>
+            </DndContext>
+          </TabsContent>
+
+          <TabsContent value="dashboard">
+            <DashboardSummary stats={data.stats} />
+          </TabsContent>
+        </Tabs>
 
         {isPending ? (
           <p className="text-sm text-zinc-500">Updating operations board…</p>

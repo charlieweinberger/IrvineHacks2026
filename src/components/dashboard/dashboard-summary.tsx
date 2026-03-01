@@ -7,12 +7,23 @@ export function DashboardSummary({ stats }: { stats: DashboardStats }) {
     { label: "Confirmed", value: stats.confirmed },
     { label: "Cancelled", value: stats.cancelled },
     { label: "Awaiting Response", value: stats.awaitingResponse },
-    { label: "Cars Created", value: stats.carsCreated },
+    { label: "Text Sent", value: stats.textSent },
+    { label: "Ambiguous", value: stats.ambiguous },
+    { label: "Present", value: stats.present },
     { label: "Officers Attending", value: stats.officersAttending },
+    { label: "Total Drivers", value: stats.totalDrivers },
+    { label: "Self-Drivers", value: stats.selfDrivers },
+    { label: "Cars Created", value: stats.carsCreated },
+    { label: "Total Riders", value: stats.totalRiders },
+    { label: "Assigned Riders", value: stats.assignedRiders },
+    { label: "Unassigned Riders", value: stats.unassignedRiders },
+    { label: "Total Seats Available", value: stats.totalSeatsAvailable },
+    { label: "Total Seats Used", value: stats.totalSeatsUsed },
+    { label: "Carpool Utilization", value: `${stats.carpoolUtilization}%` },
   ];
 
   return (
-    <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
+    <section className="grid gap-3 md:grid-cols-3 xl:grid-cols-4">
       {cards.map((card) => (
         <Card
           key={card.label}

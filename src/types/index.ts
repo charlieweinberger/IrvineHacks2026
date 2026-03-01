@@ -60,6 +60,17 @@ export interface DashboardStats {
   awaitingResponse: number;
   carsCreated: number;
   officersAttending: number;
+  textSent: number;
+  ambiguous: number;
+  present: number;
+  totalDrivers: number;
+  selfDrivers: number;
+  totalRiders: number;
+  assignedRiders: number;
+  unassignedRiders: number;
+  totalSeatsAvailable: number;
+  totalSeatsUsed: number;
+  carpoolUtilization: number;
 }
 
 export interface EventData {

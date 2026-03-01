@@ -327,20 +327,61 @@ function buildStats(participants: Participant[]): DashboardStats {
   const awaitingResponse = participants.filter(
     (p) => p.status === "awaiting",
   ).length;
+  const textSent = participants.filter((p) => p.status === "text_sent").length;
+  const ambiguous = participants.filter((p) => p.status === "ambiguous").length;
+  const present = participants.filter((p) => p.status === "present").length;
+  
   const carsCreated = participants.filter(
     (p) => p.driver && !p.selfDriver && p.seats > 0,
   ).length;
   const officersAttending = participants.filter(
     (p) => p.isOfficer && p.status !== "cancelled",
   ).length;
+  
+  const totalDrivers = participants.filter(
+    (p) => p.driver && !p.selfDriver && p.status !== "cancelled",
+  ).length;
+  const selfDrivers = participants.filter(
+    (p) => p.selfDriver && p.status !== "cancelled",
+  ).length;
+  const totalRiders = participants.filter(
+    (p) => !p.driver && !p.selfDriver,
+  ).length;
+  const assignedRiders = participants.filter(
+    (p) => !p.driver && !p.selfDriver && p.carId !== null,
+  ).length;
+  const unassignedRiders = participants.filter(
+    (p) => !p.driver && !p.selfDriver && p.carId === null && p.status !== "cancelled",
+  ).length;
+  
+  const totalSeatsAvailable = participants
+    .filter((p) => p.driver && !p.selfDriver && p.status !== "cancelled")
+    .reduce((sum, p) => sum + p.seats, 0);
+  const totalSeatsUsed = participants.filter(
+    (p) => !p.driver && !p.selfDriver && p.carId !== null,
+  ).length;
+  const carpoolUtilization = totalSeatsAvailable > 0 
+    ? Math.round((totalSeatsUsed / totalSeatsAvailable) * 100) 
+    : 0;
 
   return {
     totalSignedUp,
     confirmed,
     cancelled,
     awaitingResponse,
+    textSent,
+    ambiguous,
+    present,
     carsCreated,
     officersAttending,
+    totalDrivers,
+    selfDrivers,
+    totalRiders,
+    assignedRiders,
+    unassignedRiders,
+    totalSeatsAvailable,
+    totalSeatsUsed,
+    carpoolUtilization,
   };
 }
 

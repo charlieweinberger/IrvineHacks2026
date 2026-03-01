@@ -40,7 +40,7 @@ export const ParticipantPreferences = forwardRef<
           <span className="text-zinc-600">
             {preferredRidePartners.length > 0
               ? preferredRidePartners.join(", ")
-              : "None specified"}
+              : "-"}
           </span>
         </div>
       )}

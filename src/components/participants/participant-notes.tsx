@@ -71,7 +71,7 @@ export const ParticipantNotes = forwardRef<
         <div className="text-xs">
           <span className="font-semibold text-zinc-700">Officer Note: </span>
           <span className="text-zinc-600">
-            {appNotes || "None"}
+            {appNotes || ""}
           </span>
         </div>
       )}

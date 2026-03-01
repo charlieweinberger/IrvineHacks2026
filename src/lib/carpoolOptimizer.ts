@@ -40,6 +40,7 @@ export function optimizeCarpoolAssignments(
     seatsTotal: driver.seats,
     seatsUsed: 0,
     riderIds: [],
+    seatAssignments: Array.from({ length: driver.seats }, () => null),
   }));
 
   if (cars.length === 0) {

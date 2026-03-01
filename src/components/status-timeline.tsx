@@ -17,9 +17,6 @@ export function StatusTimeline({
     { value: "cancelled" as const, label: "Cancelled" },
   ];
 
-  // Present: only selectable after confirmed or ambiguous
-  const canSelectPresent = status === "confirmed" || status === "ambiguous" || status === "present";
-
   return (
     <div className="space-y-2">
       {/* Main flow: Progression → Response → Present */}

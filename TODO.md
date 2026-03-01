@@ -2,3 +2,9 @@
   - e.g. I say "Alex in John's car" -> AI parses my voice and visually puts Alex in John's ca
 - make the "present" status buttons synced with the event mode's "mark present" (or otherwise combine the "event mode" into the regular mode")
 - instead of having an event mode, just make it mobile-friendly
+- make sure codebase is organized well
+- review SQLite and see if it's needed
+- make working w/ actual AAC spreadsheets
+  - convert this to how AAC spreadsheets look
+  - add actual API connection to sheets
+  - add home page so that you can choose which spreadsheet to view

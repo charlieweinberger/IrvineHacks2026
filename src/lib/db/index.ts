@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS participant_state (
   is_officer INTEGER NOT NULL DEFAULT 0,
   app_notes TEXT NOT NULL DEFAULT '',
   car_id TEXT,
+  seat_index INTEGER,
   check_in_state TEXT,
   updated_at INTEGER NOT NULL
 );
@@ -28,5 +29,13 @@ CREATE TABLE IF NOT EXISTS cars (
   created_at INTEGER NOT NULL
 );
 `);
+
+const participantColumns = sqlite
+  .prepare("PRAGMA table_info(participant_state)")
+  .all() as Array<{ name: string }>;
+
+if (!participantColumns.some((column) => column.name === "seat_index")) {
+  sqlite.exec("ALTER TABLE participant_state ADD COLUMN seat_index INTEGER");
+}
 
 export const db = drizzle(sqlite);

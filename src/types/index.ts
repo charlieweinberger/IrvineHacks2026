@@ -23,6 +23,7 @@ export interface Participant {
   isOfficer: boolean;
   appNotes: string;
   carId: string | null;
+  seatIndex: number | null;
   checkInState: CheckInState;
 }
 
@@ -33,6 +34,7 @@ export interface Car {
   seatsTotal: number;
   seatsUsed: number;
   riderIds: string[];
+  seatAssignments: Array<string | null>;
 }
 
 export interface Insight {

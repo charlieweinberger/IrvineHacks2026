@@ -14,6 +14,7 @@ function toParticipant(
     isOfficer: boolean;
     appNotes: string;
     carId: string | null;
+    seatIndex: number | null;
     checkInState: string | null;
   },
 ): Participant {
@@ -26,8 +27,63 @@ function toParticipant(
     isOfficer,
     appNotes: local?.appNotes ?? "",
     carId: local?.carId ?? null,
+    seatIndex: local?.seatIndex ?? null,
     checkInState: (local?.checkInState as Participant["checkInState"]) ?? null,
   };
+}
+
+function normalizeSeatIndexes(participants: Participant[]) {
+  const normalized = participants.map((participant) => ({ ...participant }));
+  const byId = new Map(normalized.map((participant) => [participant.id, participant]));
+
+  const drivers = normalized.filter((participant) => participant.driver && participant.seats > 0);
+
+  for (const driver of drivers) {
+    const carId = `car-${driver.id}`;
+    const seatsTotal = driver.seats;
+    const seatOccupants: Array<string | null> = Array.from({ length: seatsTotal }, () => null);
+
+    const ridersInCar = normalized.filter(
+      (participant) => !participant.driver && participant.carId === carId,
+    );
+
+    for (const rider of ridersInCar) {
+      if (
+        rider.seatIndex !== null
+        && rider.seatIndex >= 0
+        && rider.seatIndex < seatsTotal
+        && seatOccupants[rider.seatIndex] === null
+      ) {
+        seatOccupants[rider.seatIndex] = rider.id;
+      }
+    }
+
+    for (const rider of ridersInCar) {
+      if (seatOccupants.includes(rider.id)) continue;
+
+      const nextOpenSeat = seatOccupants.findIndex((seat) => seat === null);
+      if (nextOpenSeat === -1) {
+        rider.carId = null;
+        rider.seatIndex = null;
+        continue;
+      }
+
+      rider.seatIndex = nextOpenSeat;
+      seatOccupants[nextOpenSeat] = rider.id;
+    }
+
+    for (const riderId of seatOccupants) {
+      if (!riderId) continue;
+      const rider = byId.get(riderId);
+      if (!rider) continue;
+      if (rider.carId !== carId) continue;
+      if (rider.seatIndex === null || rider.seatIndex < 0 || rider.seatIndex >= seatsTotal) {
+        rider.seatIndex = seatOccupants.indexOf(riderId);
+      }
+    }
+  }
+
+  return normalized;
 }
 
 export async function syncFromSheet() {
@@ -47,6 +103,7 @@ export async function syncFromSheet() {
         isOfficer: false,
         appNotes: "",
         carId: null,
+        seatIndex: null,
         checkInState: null,
         updatedAt: new Date(),
       });
@@ -56,18 +113,44 @@ export async function syncFromSheet() {
   const locals = await db.select().from(participantState);
   const localById = new Map(locals.map((row) => [row.participantId, row]));
 
-  return sheetParticipants.map((sheet) =>
+  const mergedParticipants = sheetParticipants.map((sheet) =>
     toParticipant(sheet, localById.get(sheet.id)),
   );
+
+  return normalizeSeatIndexes(mergedParticipants);
 }
 
 function buildCars(participants: Participant[]) {
   const driverCars = participants
     .filter((p) => p.driver && p.status !== "cancelled" && p.seats > 0)
     .map((driver) => {
-      const riderIds = participants
-        .filter((p) => p.carId === `car-${driver.id}`)
-        .map((p) => p.id);
+      const seatAssignments: Array<string | null> = Array.from({ length: driver.seats }, () => null);
+
+      const assignedRiders = participants.filter(
+        (p) => !p.driver && p.carId === `car-${driver.id}`,
+      );
+
+      for (const rider of assignedRiders) {
+        if (
+          rider.seatIndex !== null
+          && rider.seatIndex >= 0
+          && rider.seatIndex < seatAssignments.length
+          && !seatAssignments[rider.seatIndex]
+        ) {
+          seatAssignments[rider.seatIndex] = rider.id;
+        }
+      }
+
+      for (const rider of assignedRiders) {
+        if (seatAssignments.includes(rider.id)) continue;
+
+        const nextOpenSeat = seatAssignments.findIndex((seat) => seat === null);
+        if (nextOpenSeat !== -1) {
+          seatAssignments[nextOpenSeat] = rider.id;
+        }
+      }
+
+      const riderIds = seatAssignments.filter((seat): seat is string => seat !== null);
 
       return {
         id: `car-${driver.id}`,
@@ -76,6 +159,7 @@ function buildCars(participants: Participant[]) {
         seatsTotal: driver.seats,
         seatsUsed: riderIds.length,
         riderIds,
+        seatAssignments,
       };
     });
 
@@ -118,6 +202,7 @@ export async function updateParticipantState(
     isOfficer: boolean;
     appNotes: string;
     carId: string | null;
+    seatIndex: number | null;
     checkInState: Participant["checkInState"];
   }>,
 ) {
@@ -129,6 +214,10 @@ export async function updateParticipantState(
   if (typeof updates.isOfficer !== "undefined") payload.isOfficer = updates.isOfficer;
   if (typeof updates.appNotes !== "undefined") payload.appNotes = updates.appNotes;
   if (typeof updates.carId !== "undefined") payload.carId = updates.carId;
+  if (typeof updates.seatIndex !== "undefined") payload.seatIndex = updates.seatIndex;
+  if (typeof updates.carId !== "undefined" && updates.carId === null && typeof updates.seatIndex === "undefined") {
+    payload.seatIndex = null;
+  }
   if (typeof updates.checkInState !== "undefined") {
     payload.checkInState = updates.checkInState;
   }
@@ -141,11 +230,59 @@ export async function updateParticipantState(
   return getEventData();
 }
 
-export async function assignRiderToCar(riderId: string, carId: string | null) {
+export async function assignRiderToCar(riderId: string, carId: string | null, seatIndex: number | null) {
+  const participants = await syncFromSheet();
+  const rider = participants.find((p) => p.id === riderId);
+
+  if (!rider || rider.driver) {
+    return getEventData();
+  }
+
+  if (carId === null || seatIndex === null) {
+    await db
+      .update(participantState)
+      .set({ carId: null, seatIndex: null, updatedAt: new Date() })
+      .where(eq(participantState.participantId, riderId));
+
+    return getEventData();
+  }
+
+  const targetDriver = participants.find((p) => p.driver && `car-${p.id}` === carId);
+  if (!targetDriver || seatIndex < 0 || seatIndex >= targetDriver.seats) {
+    return getEventData();
+  }
+
+  if (rider.carId === carId && rider.seatIndex === seatIndex) {
+    return getEventData();
+  }
+
+  const occupant = participants.find(
+    (p) => !p.driver && p.id !== riderId && p.carId === carId && p.seatIndex === seatIndex,
+  );
+
+  const riderPreviousCarId = rider.carId;
+  const riderPreviousSeatIndex = rider.seatIndex;
+
   await db
     .update(participantState)
-    .set({ carId, updatedAt: new Date() })
+    .set({ carId, seatIndex, updatedAt: new Date() })
     .where(eq(participantState.participantId, riderId));
+
+  if (occupant) {
+    const canSwapToPreviousSeat =
+      riderPreviousCarId !== null
+      && riderPreviousSeatIndex !== null
+      && riderPreviousSeatIndex >= 0;
+
+    await db
+      .update(participantState)
+      .set(
+        canSwapToPreviousSeat
+          ? { carId: riderPreviousCarId, seatIndex: riderPreviousSeatIndex, updatedAt: new Date() }
+          : { carId: null, seatIndex: null, updatedAt: new Date() },
+      )
+      .where(eq(participantState.participantId, occupant.id));
+  }
 
   return getEventData();
 }
@@ -159,15 +296,24 @@ export async function autoAssignCars(prioritizeOfficers: boolean) {
   if (riderIds.length > 0) {
     await db
       .update(participantState)
-      .set({ carId: null, updatedAt: new Date() })
+      .set({ carId: null, seatIndex: null, updatedAt: new Date() })
       .where(inArray(participantState.participantId, riderIds));
   }
 
   const entries = [...result.assignments.entries()];
+  const nextSeatByCar = new Map<string, number>();
+
   for (const [riderId, assignedCarId] of entries) {
+    if (assignedCarId === null) {
+      continue;
+    }
+
+    const nextSeat = nextSeatByCar.get(assignedCarId) ?? 0;
+    nextSeatByCar.set(assignedCarId, nextSeat + 1);
+
     await db
       .update(participantState)
-      .set({ carId: assignedCarId, updatedAt: new Date() })
+      .set({ carId: assignedCarId, seatIndex: nextSeat, updatedAt: new Date() })
       .where(and(eq(participantState.participantId, riderId)));
   }
 

@@ -33,7 +33,7 @@ function rowToParticipant(row: SheetRow, idx: number) {
     sourceNotes: row.notes?.trim() || "",
   } satisfies Omit<
     Participant,
-    "status" | "isOfficer" | "appNotes" | "carId" | "checkInState"
+    "status" | "isOfficer" | "appNotes" | "carId" | "seatIndex" | "checkInState"
   >;
 }
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import { DndContext, DragEndEvent, useDraggable, useDroppable } from "@dnd-kit/core";
+import { DndContext, DragEndEvent, closestCenter, useDraggable, useDroppable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { Search } from "lucide-react";
 import { DashboardSummary } from "@/components/dashboard-summary";
@@ -116,18 +116,36 @@ export function OperationsStudio({ initialData }: { initialData: EventData }) {
 
     if (!target) return;
 
-    let carId: string | null = null;
+    const activeParticipant = participantsById.get(riderId);
+    if (!activeParticipant || activeParticipant.driver) return;
+
+    let carId: string | null | undefined;
+    let seatIndex: number | null | undefined;
 
     if (target === "unassigned") {
       carId = null;
+      seatIndex = null;
     } else if (target.startsWith("seat:")) {
-      const [, extractedCarId] = target.split(":").slice(0, 2);
-      carId = extractedCarId;
+      const parts = target.split(":");
+      carId = parts[1];
+      const seatPart = parts[2];
+      const parsedSeat = Number.parseInt(seatPart, 10);
+      if (Number.isNaN(parsedSeat)) return;
+      seatIndex = parsedSeat;
+    } else {
+      const targetParticipant = participantsById.get(target);
+      if (targetParticipant && !targetParticipant.driver) {
+        carId = targetParticipant.carId ?? null;
+        seatIndex = targetParticipant.seatIndex ?? null;
+      }
     }
+
+    if (typeof carId === "undefined" || typeof seatIndex === "undefined") return;
+    if (activeParticipant.carId === carId && activeParticipant.seatIndex === seatIndex) return;
 
     mutate("/api/carpool/assign", {
       method: "POST",
-      body: JSON.stringify({ riderId, carId }),
+      body: JSON.stringify({ riderId, carId, seatIndex }),
     });
   }
 
@@ -249,7 +267,7 @@ export function OperationsStudio({ initialData }: { initialData: EventData }) {
             </div>
 
             <div className="space-y-5">
-              <DndContext onDragEnd={onDragEnd}>
+              <DndContext collisionDetection={closestCenter} onDragEnd={onDragEnd}>
                 <Card>
                   <CardHeader>
                     <CardTitle>Carpool Board</CardTitle>

@@ -13,14 +13,10 @@
 3. Use AI to detect rider preferences
 4. voice -> AI -> update (e.g. I say "Alex in John's car" -> AI parses my voice and visually puts Alex in John's car)
 
-5. manual overrides
-   1. update driver capacity
-   2. update role (rider/self-driver -> driver)
-
 # Overall To-Do Items
 
 - write README.md
-- make sure auto-carpool organizer actually works
+- make sure carpool auto-assign actually works
 - improve overall layout (participants vs. carpool vs. insights)
 - make sure codebase is organized well
-- review SQLite and see if it's needed/useful
+- review SQLite db

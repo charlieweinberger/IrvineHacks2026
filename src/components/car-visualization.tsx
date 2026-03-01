@@ -30,7 +30,7 @@ function DraggableOccupant({ occupant }: { occupant: Participant }) {
       ref={setNodeRef}
       style={style}
       type="button"
-      className="relative z-10 flex w-full touch-none flex-col items-center justify-center rounded-md bg-transparent px-1 py-1"
+      className="relative z-10 flex w-full h-full touch-none flex-col items-center justify-center rounded-md bg-transparent px-1 py-1"
       title={occupant.name}
       {...listeners}
       {...attributes}

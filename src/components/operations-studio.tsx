@@ -150,23 +150,9 @@ export function OperationsStudio({ initialData }: { initialData: EventData }) {
   return (
     <main className="min-h-screen bg-zinc-100 p-4 md:p-6">
       <div className="mx-auto max-w-7xl space-y-5">
-        <header className="flex flex-col gap-3 rounded-xl border border-zinc-200 bg-white p-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Event Operations Studio</h1>
-            <p className="text-sm text-zinc-500">Mission Control for signups, carpools, and live check-in.</p>
-          </div>
-
-          <Button
-            variant="secondary"
-            onClick={() =>
-              mutate("/api/carpool/auto-assign", {
-                method: "POST",
-                body: JSON.stringify({ prioritizeOfficers: true }),
-              })
-            }
-          >
-            Auto Assign Carpools
-          </Button>
+        <header className="rounded-xl border border-zinc-200 bg-white p-4">
+          <h1 className="text-2xl font-bold tracking-tight">Event Operations Studio</h1>
+          <p className="text-sm text-zinc-500">Mission Control for signups, carpools, and live check-in.</p>
         </header>
 
         <DashboardSummary stats={data.stats} />
@@ -204,8 +190,20 @@ export function OperationsStudio({ initialData }: { initialData: EventData }) {
           <div className="space-y-5">
             <DndContext collisionDetection={closestCenter} onDragEnd={onDragEnd}>
               <Card>
-                <CardHeader>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
                   <CardTitle>Carpool Board</CardTitle>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() =>
+                      mutate("/api/carpool/auto-assign", {
+                        method: "POST",
+                        body: JSON.stringify({ prioritizeOfficers: true }),
+                      })
+                    }
+                  >
+                    Auto Assign
+                  </Button>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <UnassignedLane>

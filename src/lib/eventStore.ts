@@ -4,6 +4,7 @@ import { cars, participantState } from "@/lib/db/schema";
 import { fetchSheetParticipants } from "@/lib/googleSheets";
 import { generateMockInsights } from "@/lib/aiInsights";
 import { optimizeCarpoolAssignments } from "@/lib/carpoolOptimizer";
+import { isOfficerEmail } from "@/lib/config";
 import type { DashboardStats, EventData, EventStatus, Participant } from "@/types";
 
 function toParticipant(
@@ -16,10 +17,13 @@ function toParticipant(
     checkInState: string | null;
   },
 ): Participant {
+  // Auto-determine officer status based on email
+  const isOfficer = isOfficerEmail(sheet.email);
+
   return {
     ...sheet,
     status: (local?.status as EventStatus) ?? "awaiting",
-    isOfficer: local?.isOfficer ?? false,
+    isOfficer,
     appNotes: local?.appNotes ?? "",
     carId: local?.carId ?? null,
     checkInState: (local?.checkInState as Participant["checkInState"]) ?? null,

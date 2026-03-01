@@ -240,7 +240,6 @@ export function OperationsStudio({ initialData }: { initialData: EventData }) {
                         key={participant.id}
                         participant={participant}
                         onStatusChange={(id, status: EventStatus) => updateParticipant(id, { status })}
-                        onOfficerToggle={(id, isOfficer) => updateParticipant(id, { isOfficer })}
                         onSaveNotes={(id, appNotes) => updateParticipant(id, { appNotes })}
                       />
                     ))}
@@ -273,17 +272,6 @@ export function OperationsStudio({ initialData }: { initialData: EventData }) {
               </DndContext>
 
               <InsightPanel insights={data.insights} />
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Officer Priority</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-zinc-600">
-                    Officers can be tagged per participant and are prioritized by auto-assign.
-                  </p>
-                </CardContent>
-              </Card>
             </div>
           </div>
         )}

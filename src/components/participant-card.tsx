@@ -11,12 +11,10 @@ import type { EventStatus, Participant } from "@/types";
 export function ParticipantCard({
   participant,
   onStatusChange,
-  onOfficerToggle,
   onSaveNotes,
 }: {
   participant: Participant;
   onStatusChange: (id: string, status: EventStatus) => void;
-  onOfficerToggle: (id: string, next: boolean) => void;
   onSaveNotes: (id: string, notes: string) => void;
 }) {
   const [note, setNote] = useState(participant.appNotes);
@@ -35,13 +33,7 @@ export function ParticipantCard({
           ) : (
             <Badge>Rider</Badge>
           )}
-          <button
-            type="button"
-            className="rounded-full border border-zinc-300 px-2 py-1 text-xs"
-            onClick={() => onOfficerToggle(participant.id, !participant.isOfficer)}
-          >
-            {participant.isOfficer ? "Officer ✓" : "Mark Officer"}
-          </button>
+          {participant.isOfficer && <Badge variant="success">Officer</Badge>}
         </div>
       </CardHeader>
       <CardContent className="space-y-3">

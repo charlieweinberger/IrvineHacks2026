@@ -10,16 +10,14 @@
   2. in the participants tab, mention (e.g. add a column) if someone is a paid member
   3. make sure to prioritize them in the carpool (put a star next to their name)
 
-# Advanced Features
+3. Use AI to detect rider preferences
+4. voice -> AI -> update (e.g. I say "Alex in John's car" -> AI parses my voice and visually puts Alex in John's car)
 
-1. Use AI to detect rider preferences
-2. voice -> AI -> update (e.g. I say "Alex in John's car" -> AI parses my voice and visually puts Alex in John's car)
-3. auto-send confirmation texts w/ Twilio
+5. Add manual overrides (e.g. override ride preferences, in case name is wrong; others, if needed)
 
 # Overall To-Do Items
 
 - write README.md
-- Add manual overrides (e.g. override ride preferences, in case name is wrong; others, if needed)
 - make sure auto-carpool organizer actually works
 - improve overall layout (participants vs. carpool vs. insights)
 - make sure codebase is organized well

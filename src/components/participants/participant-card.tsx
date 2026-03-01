@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusTimeline } from "@/components/participants/status-timeline";
 import { ParticipantNotes } from "@/components/participants/participant-notes";
+import { ParticipantPreferences } from "@/components/participants/participant-preferences";
 import { ParticipantRoleBadges } from "@/components/participants/participant-role-badges";
 import type { EventStatus, Participant } from "@/types";
 
@@ -10,10 +11,12 @@ export function ParticipantCard({
   participant,
   onStatusChange,
   onSaveNotes,
+  onSavePreferences,
 }: {
   participant: Participant;
   onStatusChange: (id: string, status: EventStatus) => void;
   onSaveNotes: (id: string, notes: string) => void;
+  onSavePreferences: (id: string, partners: string[]) => void;
 }) {
   return (
     <Card className="transition-all hover:shadow-md">
@@ -30,17 +33,10 @@ export function ParticipantCard({
           status={participant.status}
           onChange={(status) => onStatusChange(participant.id, status)}
         />
-        {participant.preferredRidePartners &&
-          participant.preferredRidePartners.length > 0 && (
-            <div className="text-xs">
-              <span className="font-semibold text-zinc-700">
-                Prefers to ride with:{" "}
-              </span>
-              <span className="text-zinc-600">
-                {participant.preferredRidePartners.join(", ")}
-              </span>
-            </div>
-          )}
+        <ParticipantPreferences
+          preferredRidePartners={participant.preferredRidePartners || []}
+          onSave={(partners) => onSavePreferences(participant.id, partners)}
+        />
         <ParticipantNotes
           extraComments={participant.extraComments}
           appNotes={participant.appNotes}

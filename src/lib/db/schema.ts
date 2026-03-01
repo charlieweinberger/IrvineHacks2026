@@ -8,6 +8,7 @@ export const participantState = sqliteTable("participant_state", {
     .notNull()
     .default(false),
   appNotes: text("app_notes").notNull().default(""),
+  preferredRidePartners: text("preferred_ride_partners").notNull().default(""),
   carId: text("car_id"),
   seatIndex: integer("seat_index"),
   checkInState: text("check_in_state"),

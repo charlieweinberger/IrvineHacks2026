@@ -8,12 +8,14 @@ interface ParticipantListProps {
   participants: Participant[];
   onStatusChange: (id: string, status: EventStatus) => void;
   onSaveNotes: (id: string, notes: string) => void;
+  onSavePreferences: (id: string, partners: string[]) => void;
 }
 
 export function ParticipantList({
   participants,
   onStatusChange,
   onSaveNotes,
+  onSavePreferences,
 }: ParticipantListProps) {
   return (
     <div className="grid gap-3">
@@ -26,6 +28,7 @@ export function ParticipantList({
             participant={participant}
             onStatusChange={onStatusChange}
             onSaveNotes={onSaveNotes}
+            onSavePreferences={onSavePreferences}
           />
         </div>
       ))}

@@ -15,6 +15,7 @@ export async function PATCH(
     appNotes: string;
     carId: string | null;
     checkInState: Participant["checkInState"];
+    preferredRidePartners: string[];
   }>;
 
   const data = await updateParticipantState(id, body);

@@ -190,6 +190,9 @@ export function OperationsStudio({ initialData }: { initialData: EventData }) {
                     onSaveNotes={(id, appNotes) =>
                       updateParticipant(id, { appNotes })
                     }
+                    onSavePreferences={(id, preferredRidePartners) =>
+                      updateParticipant(id, { preferredRidePartners })
+                    }
                   />
                 ) : (
                   <ParticipantTable

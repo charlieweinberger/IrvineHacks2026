@@ -18,6 +18,7 @@ function toParticipant(
     status: string;
     isOfficer: boolean;
     appNotes: string;
+    preferredRidePartners: string;
     carId: string | null;
     seatIndex: number | null;
     checkInState: string | null;
@@ -26,8 +27,17 @@ function toParticipant(
   // Auto-determine officer status based on email
   const isOfficer = isOfficerEmail(sheet.email);
 
+  // Parse preferredRidePartners from database (comma-separated string) or use sheet value
+  const preferredRidePartners = local?.preferredRidePartners
+    ? local.preferredRidePartners
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean)
+    : sheet.preferredRidePartners;
+
   return {
     ...sheet,
+    preferredRidePartners,
     status: (local?.status as EventStatus) ?? "awaiting",
     isOfficer,
     appNotes: local?.appNotes ?? "",
@@ -119,11 +129,24 @@ export async function syncFromSheet() {
         status: "awaiting",
         isOfficer: false,
         appNotes: "",
+        preferredRidePartners: participant.preferredRidePartners.join(", "),
         carId: null,
         seatIndex: null,
         checkInState: null,
         updatedAt: new Date(),
       });
+    } else if (
+      existing[0].preferredRidePartners === "" &&
+      participant.preferredRidePartners.length > 0
+    ) {
+      // Backfill preferredRidePartners from sheet if DB has empty string
+      await db
+        .update(participantState)
+        .set({
+          preferredRidePartners: participant.preferredRidePartners.join(", "),
+          updatedAt: new Date(),
+        })
+        .where(eq(participantState.participantId, participant.id));
     }
   }
 
@@ -230,6 +253,7 @@ export async function updateParticipantState(
     status: EventStatus;
     isOfficer: boolean;
     appNotes: string;
+    preferredRidePartners: string[];
     carId: string | null;
     seatIndex: number | null;
     checkInState: Participant["checkInState"];
@@ -250,6 +274,8 @@ export async function updateParticipantState(
     payload.isOfficer = updates.isOfficer;
   if (typeof updates.appNotes !== "undefined")
     payload.appNotes = updates.appNotes;
+  if (typeof updates.preferredRidePartners !== "undefined")
+    payload.preferredRidePartners = updates.preferredRidePartners.join(", ");
   if (typeof updates.carId !== "undefined") payload.carId = updates.carId;
   if (typeof updates.seatIndex !== "undefined")
     payload.seatIndex = updates.seatIndex;

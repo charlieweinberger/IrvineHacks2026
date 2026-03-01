@@ -63,4 +63,12 @@ if (!participantColumns.some((column) => column.name === "self_driver")) {
   sqlite.exec("ALTER TABLE participant_state ADD COLUMN self_driver INTEGER");
 }
 
+if (!participantColumns.some((column) => column.name === "driver_capacity_review_approved")) {
+  sqlite.exec("ALTER TABLE participant_state ADD COLUMN driver_capacity_review_approved INTEGER NOT NULL DEFAULT 0");
+}
+
+if (!participantColumns.some((column) => column.name === "notes_review_approved")) {
+  sqlite.exec("ALTER TABLE participant_state ADD COLUMN notes_review_approved INTEGER NOT NULL DEFAULT 0");
+}
+
 export const db = drizzle(sqlite);

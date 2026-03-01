@@ -103,14 +103,24 @@ export function ParticipantTable({
               </td>
               <td className="px-3 py-2">
                 <div className="flex flex-col gap-1">
-                  {participant.needsManualReviewDriverCapacity && (
+                  {participant.needsManualReviewDriverCapacity && !participant.driverCapacityReviewApproved && (
                     <Badge variant="warning" className="text-[10px] py-0 px-1.5 w-fit">
                       Capacity
                     </Badge>
                   )}
-                  {participant.needsManualReviewNotes && (
+                  {participant.needsManualReviewDriverCapacity && participant.driverCapacityReviewApproved && (
+                    <Badge variant="success" className="text-[10px] py-0 px-1.5 w-fit">
+                      Capacity ✓
+                    </Badge>
+                  )}
+                  {participant.needsManualReviewNotes && !participant.notesReviewApproved && (
                     <Badge variant="warning" className="text-[10px] py-0 px-1.5 w-fit">
                       Notes
+                    </Badge>
+                  )}
+                  {participant.needsManualReviewNotes && participant.notesReviewApproved && (
+                    <Badge variant="success" className="text-[10px] py-0 px-1.5 w-fit">
+                      Notes ✓
                     </Badge>
                   )}
                   {!participant.needsManualReviewDriverCapacity && 

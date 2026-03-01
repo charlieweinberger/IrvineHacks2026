@@ -25,6 +25,8 @@ function toParticipant(
     carId: string | null;
     seatIndex: number | null;
     checkInState: string | null;
+    driverCapacityReviewApproved: boolean | null;
+    notesReviewApproved: boolean | null;
   },
 ): Participant {
   // Auto-determine officer status based on email
@@ -63,6 +65,8 @@ function toParticipant(
     carId: local?.carId ?? null,
     seatIndex: local?.seatIndex ?? null,
     checkInState: (local?.checkInState as Participant["checkInState"]) ?? null,
+    driverCapacityReviewApproved: local?.driverCapacityReviewApproved ?? false,
+    notesReviewApproved: local?.notesReviewApproved ?? false,
   };
 }
 
@@ -135,6 +139,40 @@ function normalizeSeatIndexes(participants: Participant[]) {
 export async function syncFromSheet(sheetId?: string) {
   const sheetParticipants = await fetchSheetParticipants(sheetId);
   
+  // If sheet fetch returned empty, it might be a credentials issue
+  // Don't delete database records in this case - just return what we have
+  if (sheetParticipants.length === 0) {
+    const locals = await db.select().from(participantState);
+    
+    // Return database records as-is (with empty sheet data)
+    const mergedParticipants = locals.map((local) => ({
+      id: local.participantId,
+      name: "Unknown", // placeholder since we don't have sheet data
+      phone: "",
+      email: local.email,
+      timestamp: new Date().toISOString(),
+      driver: local.driver ?? false,
+      seats: local.seats ?? 0,
+      selfDriver: local.selfDriver ?? false,
+      extraComments: "",
+      preferredRidePartners: local.preferredRidePartners
+        ? local.preferredRidePartners.split(",").map(s => s.trim()).filter(Boolean)
+        : [],
+      needsManualReviewDriverCapacity: false,
+      needsManualReviewNotes: false,
+      status: local.status as EventStatus,
+      isOfficer: local.isOfficer,
+      appNotes: local.appNotes,
+      carId: local.carId,
+      seatIndex: local.seatIndex,
+      checkInState: local.checkInState as Participant["checkInState"],
+      driverCapacityReviewApproved: local.driverCapacityReviewApproved ?? false,
+      notesReviewApproved: local.notesReviewApproved ?? false,
+    } as Participant));
+    
+    return normalizeSeatIndexes(mergedParticipants);
+  }
+  
   // Get current sheet participant IDs
   const sheetParticipantIds = new Set(sheetParticipants.map(p => p.id));
   
@@ -168,6 +206,8 @@ export async function syncFromSheet(sheetId?: string) {
         carId: null,
         seatIndex: null,
         checkInState: null,
+        driverCapacityReviewApproved: false,
+        notesReviewApproved: false,
         updatedAt: new Date(),
       });
     } else {
@@ -326,7 +366,10 @@ export async function updateParticipantState(
     carId: string | null;
     seatIndex: number | null;
     checkInState: Participant["checkInState"];
+    driverCapacityReviewApproved: boolean;
+    notesReviewApproved: boolean;
   }>,
+  sheetId?: string,
 ) {
   // Fetch current participant to check if this is a driver being uncancelled
   const [currentParticipant] = await db
@@ -361,6 +404,12 @@ export async function updateParticipantState(
   if (typeof updates.checkInState !== "undefined") {
     payload.checkInState = updates.checkInState;
   }
+  if (typeof updates.driverCapacityReviewApproved !== "undefined") {
+    payload.driverCapacityReviewApproved = updates.driverCapacityReviewApproved;
+  }
+  if (typeof updates.notesReviewApproved !== "undefined") {
+    payload.notesReviewApproved = updates.notesReviewApproved;
+  }
 
   await db
     .update(participantState)
@@ -373,7 +422,7 @@ export async function updateParticipantState(
     typeof updates.status !== "undefined" &&
     updates.status !== "cancelled"
   ) {
-    const allParticipants = await syncFromSheet();
+    const allParticipants = await syncFromSheet(sheetId);
     const currentDriver = allParticipants.find(
       (p) => p.id === participantId && p.driver && !p.selfDriver,
     );
@@ -387,19 +436,20 @@ export async function updateParticipantState(
     }
   }
 
-  return getEventData();
+  return getEventData(sheetId);
 }
 
 export async function assignRiderToCar(
   riderId: string,
   carId: string | null,
   seatIndex: number | null,
+  sheetId?: string,
 ) {
-  const participants = await syncFromSheet();
+  const participants = await syncFromSheet(sheetId);
   const rider = participants.find((p) => p.id === riderId);
 
   if (!rider || rider.driver) {
-    return getEventData();
+    return getEventData(sheetId);
   }
 
   if (carId === null || seatIndex === null) {
@@ -408,18 +458,18 @@ export async function assignRiderToCar(
       .set({ carId: null, seatIndex: null, updatedAt: new Date() })
       .where(eq(participantState.participantId, riderId));
 
-    return getEventData();
+    return getEventData(sheetId);
   }
 
   const targetDriver = participants.find(
     (p) => p.driver && !p.selfDriver && `car-${p.id}` === carId,
   );
   if (!targetDriver || seatIndex < 0 || seatIndex >= targetDriver.seats) {
-    return getEventData();
+    return getEventData(sheetId);
   }
 
   if (rider.carId === carId && rider.seatIndex === seatIndex) {
-    return getEventData();
+    return getEventData(sheetId);
   }
 
   const occupant = participants.find(
@@ -458,11 +508,11 @@ export async function assignRiderToCar(
       .where(eq(participantState.participantId, occupant.id));
   }
 
-  return getEventData();
+  return getEventData(sheetId);
 }
 
-export async function autoAssignCars(prioritizeOfficers: boolean) {
-  const participants = await syncFromSheet();
+export async function autoAssignCars(prioritizeOfficers: boolean, sheetId?: string) {
+  const participants = await syncFromSheet(sheetId);
   const result = optimizeCarpoolAssignments(participants, prioritizeOfficers);
 
   const riderIds = participants
@@ -504,5 +554,5 @@ export async function autoAssignCars(prioritizeOfficers: boolean) {
     await db.insert(cars).values(generatedCars);
   }
 
-  return getEventData();
+  return getEventData(sheetId);
 }

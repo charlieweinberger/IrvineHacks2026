@@ -30,6 +30,8 @@ export interface Participant {
   // Manual review flags
   needsManualReviewDriverCapacity: boolean;
   needsManualReviewNotes: boolean;
+  driverCapacityReviewApproved: boolean;
+  notesReviewApproved: boolean;
 }
 
 export interface Car {

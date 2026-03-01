@@ -67,7 +67,7 @@ function rowToParticipant(row: SheetRow, idx: number) {
     needsManualReviewNotes,
   } satisfies Omit<
     Participant,
-    "status" | "isOfficer" | "appNotes" | "carId" | "seatIndex" | "checkInState"
+    "status" | "isOfficer" | "appNotes" | "carId" | "seatIndex" | "checkInState" | "driverCapacityReviewApproved" | "notesReviewApproved"
   >;
 }
 
@@ -132,11 +132,16 @@ export async function listGoogleSheets(): Promise<GoogleSheetMetadata[]> {
 export async function fetchSheetParticipants(sheetId?: string) {
   const defaultSheetId = process.env.GOOGLE_SHEET_ID;
   const targetSheetId = sheetId || defaultSheetId;
-  const sheetRange = process.env.GOOGLE_SHEET_RANGE ?? "Form Responses 1!A:H";
+  const sheetRange = "Form Responses 1!A:H";
   const serviceAccount = extractServiceAccount();
 
-  if (!targetSheetId || !serviceAccount) {
-    console.warn("Missing Google Sheets credentials or sheet ID");
+  if (!serviceAccount) {
+    console.warn("Missing Google Sheets service account credentials");
+    return [];
+  }
+
+  if (!targetSheetId) {
+    console.warn("No sheet ID provided - please select a sheet from the home page");
     return [];
   }
 

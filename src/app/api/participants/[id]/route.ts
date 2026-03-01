@@ -19,8 +19,10 @@ export async function PATCH(
     driver: boolean;
     selfDriver: boolean;
     seats: number;
+    sheetId: string;
   }>;
 
-  const data = await updateParticipantState(id, body);
+  const { sheetId, ...updates } = body;
+  const data = await updateParticipantState(id, updates, sheetId);
   return NextResponse.json(data);
 }

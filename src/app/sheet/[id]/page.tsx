@@ -19,5 +19,5 @@ export default async function SheetPage({
   const sheet = sheets.find(s => s.id === sheetId);
   const sheetName = sheet?.name || "Unknown Sheet";
   
-  return <OperationsStudio initialData={data} sheetName={sheetName} />;
+  return <OperationsStudio initialData={data} sheetName={sheetName} sheetId={sheetId} />;
 }

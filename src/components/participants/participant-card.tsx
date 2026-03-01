@@ -19,6 +19,7 @@ export function ParticipantCard({
   onSavePreferences,
   onSaveSeats,
   onSaveDriverStatus,
+  onUpdateParticipant,
 }: {
   participant: Participant;
   onStatusChange: (id: string, status: EventStatus) => void;
@@ -26,8 +27,10 @@ export function ParticipantCard({
   onSavePreferences: (id: string, partners: string[]) => void;
   onSaveSeats: (id: string, seats: number) => void;
   onSaveDriverStatus: (id: string, driver: boolean, selfDriver: boolean) => void;
+  onUpdateParticipant: (id: string, updates: Partial<Participant>) => void;
 }) {
   const [isEditing, setIsEditing] = useState(false);
+  const [notesReviewApproved, setNotesReviewApproved] = useState(participant.notesReviewApproved);
   const driverStatusRef = useRef<{ getValue: () => { driver: boolean; selfDriver: boolean } }>(null);
   const seatsRef = useRef<{ getValue: () => number }>(null);
   const preferencesRef = useRef<{ getValue: () => string[] }>(null);
@@ -56,6 +59,10 @@ export function ParticipantCard({
     if (notesRef.current) {
       const notes = notesRef.current.getValue();
       onSaveNotes(participant.id, notes);
+    }
+    // Save review approval status
+    if (notesReviewApproved !== participant.notesReviewApproved) {
+      onUpdateParticipant(participant.id, { notesReviewApproved });
     }
     setIsEditing(false);
   };
@@ -119,7 +126,9 @@ export function ParticipantCard({
           extraComments={participant.extraComments}
           appNotes={participant.appNotes}
           needsReview={participant.needsManualReviewNotes}
+          reviewApproved={notesReviewApproved}
           forceEditMode={isEditing}
+          onReviewApprovalChange={setNotesReviewApproved}
         />
       </CardContent>
     </Card>

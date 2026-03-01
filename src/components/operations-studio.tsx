@@ -30,10 +30,12 @@ import type { Car, EventData } from "@/types";
 
 export function OperationsStudio({ 
   initialData, 
-  sheetName 
+  sheetName,
+  sheetId,
 }: { 
   initialData: EventData;
   sheetName: string;
+  sheetId: string;
 }) {
   const [data, setData] = useState(initialData);
   const [searchTerm, setSearchTerm] = useState("");
@@ -83,7 +85,7 @@ export function OperationsStudio({
   function updateParticipant(participantId: string, payload: object) {
     mutate(`/api/participants/${participantId}`, {
       method: "PATCH",
-      body: JSON.stringify(payload),
+      body: JSON.stringify({ ...payload, sheetId }),
     });
   }
 
@@ -134,7 +136,7 @@ export function OperationsStudio({
 
     mutate("/api/carpool/assign", {
       method: "POST",
-      body: JSON.stringify({ riderId, carId, seatIndex }),
+      body: JSON.stringify({ riderId, carId, seatIndex, sheetId }),
     });
   }
 
@@ -213,6 +215,7 @@ export function OperationsStudio({
                     onSaveDriverStatus={(id, driver, selfDriver) =>
                       updateParticipant(id, { driver, selfDriver })
                     }
+                    onUpdateParticipant={updateParticipant}
                   />
                 ) : (
                   <ParticipantTable
@@ -238,7 +241,7 @@ export function OperationsStudio({
                     onClick={() =>
                       mutate("/api/carpool/auto-assign", {
                         method: "POST",
-                        body: JSON.stringify({ prioritizeOfficers: true }),
+                        body: JSON.stringify({ prioritizeOfficers: true, sheetId }),
                       })
                     }
                   >

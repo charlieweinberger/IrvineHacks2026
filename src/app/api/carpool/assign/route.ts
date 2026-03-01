@@ -8,8 +8,9 @@ export async function POST(request: Request) {
     riderId: string;
     carId: string | null;
     seatIndex: number | null;
+    sheetId?: string;
   };
 
-  const data = await assignRiderToCar(body.riderId, body.carId, body.seatIndex);
+  const data = await assignRiderToCar(body.riderId, body.carId, body.seatIndex, body.sheetId);
   return NextResponse.json(data);
 }

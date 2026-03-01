@@ -15,6 +15,8 @@ export const participantState = sqliteTable("participant_state", {
   carId: text("car_id"),
   seatIndex: integer("seat_index"),
   checkInState: text("check_in_state"),
+  driverCapacityReviewApproved: integer("driver_capacity_review_approved", { mode: "boolean" }).notNull().default(false),
+  notesReviewApproved: integer("notes_review_approved", { mode: "boolean" }).notNull().default(false),
   updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
 });
 

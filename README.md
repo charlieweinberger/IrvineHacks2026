@@ -8,7 +8,7 @@ An intelligent event operations dashboard that transforms chaotic event signup m
 
 ## Inspiration
 
-I faced a painful problem organizing events: **manually assigning hundreds of participants to carpool drivers** is tedious, error-prone, and wastes time. I wanted to build a command center where event organizers could:
+I face a painful problem when organizing events: **manually managing tens of event participants and organizing them into a carpool that everyone is happy with** is tedious, error-prone, and wastes time. I wanted to build a command center where event organizers could:
 - See all participants and drivers at a glance
 - Drag-and-drop riders into car seats in seconds
 - Use voice commands ("Alex in John's car") for instant reassignment
@@ -39,7 +39,6 @@ A full-stack web app that combines real-time carpool visualization, drag-and-dro
 #### 👥 **Participant Management**
 - Real-time status tracking with role-based filtering
 - Preferred ride partners, notes, and preferences
-- Check-in and no-show tracking
 
 #### 📊 **Dashboard & Insights**
 - Live event statistics and AI-generated insights
@@ -55,52 +54,16 @@ A full-stack web app that combines real-time carpool visualization, drag-and-dro
 
 ---
 
-## How We Built It
+## How I Built It
 
 ### **Tech Stack**
 
-#### Frontend & Framework
-- **Next.js 16** (React 19) – Full-stack framework with server components
-- **TypeScript** – Type-safe development
-- **Tailwind CSS 4** – Rapid UI development
-- **Lucide React** – Icon library
+- Frontend: **React + Next.js**, **TypeScript**
+- Styling: **Tailwind CSS**, **shadcn/ui**
+- Database: **SQLite**, **Drizzle ORM**
+- APIs: **Google Sheets API**, **Web Speech API**
 
-#### State Management & Real-Time Updates
-- **Event Store pattern** – Custom centralized state management
-- Real-time data synchronization across all views
-
-#### Drag-and-Drop
-- **@dnd-kit** – Modern headless drag-and-drop library
-
-#### Database
-- **SQLite** (better-sqlite3) – Lightweight, serverless
-- **Drizzle ORM** – Type-safe queries with migrations
-
-#### Data Visualization
-- **Recharts** – React charting library
-
-#### External APIs & Services
-- **Google Sheets API** – Data import and sync
-- **Web Speech API** – Voice recognition
-- **Custom command parser** – AI-powered interpretation
-
-### **Architecture**
-
-#### Database Schema
-Two core tables:
-1. **`participant_state`** – Personal info, roles, assignments, status, preferences, approvals
-2. **`cars`** – Driver vehicles with capacity and occupancy
-
-#### Component Architecture (Domain-Driven)
-```
-components/
-├── carpool/           # Drag-and-drop car visualization
-├── participants/      # Participant management & display
-├── dashboard/         # Summary and insights
-├── sheets/            # Google Sheets integration
-├── shared/            # Common UI patterns
-└── ui/                # Reusable UI components
-```
+### **Relevant Flows**
 
 #### Voice Command Pipeline
 Capture → Transcribe → Parse (AI intent extraction) → Execute (database update) → Log & Broadcast to clients
@@ -110,63 +73,39 @@ Google Sheets/database → EventStore → components subscribe → drag-and-drop
 
 ---
 
-## Challenges We Ran Into
+## Challenges I Ran Into
 
 | Challenge | Why It Mattered | Solution |
 |-----------|-----------------|-----------|
-| **Solo project** | Teammates didn't get off the waitlist—had to handle all frontend, backend, and design alone | Focused on core features, prioritized ruthlessly, leveraged existing libraries to maximize impact |
-| **Late start** | Didn't start coding until 4pm Saturday | Built fast with Next.js scaffolding and familiar tech stack; focused on MVP first |
-| **Handling concurrent updates** | Multiple people using the dashboard simultaneously could cause conflicts | Implemented optimistic updates with server-side conflict resolution; used version numbers for data consistency |
+| **Solo project** | Teammates didn't get off the waitlist, so I had to handle all frontend, backend, and design alone | Focused on core features, iterated ruthlessly, leveraged existing libraries to maximize impact |
+| **Balance features with practicality** | Users are used to Google Sheets, may find using this app confusing or not necessary | Made sure to keep the user in mind at all times. Sure, this feature is cool, but is it actually useful/better than existing alternatives? |
 | **Voice command accuracy** | Misheard commands could assign riders to wrong cars | Built fuzzy matching, disambiguation prompts, and command preview before execution |
 
 ---
 
-## Accomplishments That We're Proud Of
+## Accomplishments That I'm Proud Of
 
 1. **Complete Full-Stack Solution** – Built frontend, backend, database, and integrations from scratch in a hackathon timeline
 2. **Voice-Driven UI** – Implemented AI-powered natural language parsing that understands complex carpool commands with fuzzy matching
-3. **Real-Time Collaboration** – Solved concurrent update challenges with optimistic UI and server-side conflict resolution
-4. **Drag-and-Drop System** – Integrated `@dnd-kit` with custom constraints for intuitive seat assignment
-5. **Google Sheets Sync** – Bidirectional integration with smart debouncing to handle API rate limits gracefully
-6. **Solo Delivery** – Delivered polished MVP as solo builder despite late start and teammates not attending
+3. **Drag-and-Drop System** – Integrated `@dnd-kit` with custom constraints for intuitive seat assignment
+4. **Google Sheets Sync** – Bidirectional integration with smart debouncing to handle API rate limits gracefully
+5. **Solo Delivery** – Delivered polished MVP as solo builder despite late start and teammates not attending
 
 ---
 
-## What We Learned
+## What I Learned
 
-### **1. Drag-and-Drop Complexity**
-Native HTML5 drag-and-drop was unintuitive for touch and complex layouts. Switching to `@dnd-kit` showed me the value of specialized libraries. Lesson: don't reinvent the wheel.
-
-### **2. Real-Time State Sync**
+### **1. Real-Time State Sync**
 Syncing across components without race conditions required: single source of truth, optimistic UI updates with rollback, and event-driven broadcasting. Building this architecture upfront prevented major refactors later.
 
-### **3. Voice Command Ambiguity**
+### **2. Voice Command Ambiguity**
 Natural language is messy. "Move Alex to John" has multiple interpretations (which John? which Alex?). I built a resolution engine with fuzzy matching, disambiguation prompts, and learning from corrections. This taught me that UX for AI features requires graceful fallbacks.
 
-### **4. Library Selection Matters**
-Choosing the right dependencies early (Next.js, @dnd-kit, Drizzle) meant I could focus on business logic rather than reinventing wheels.
-
-### **5. Prioritization Under Pressure**
+### **3. Prioritization Under Pressure**
 With a late start and solo timeline, ruthless feature prioritization was essential. Focusing on the core MVP (carpool dashboard + voice commands) allowed shipping something polished rather than several unfinished features.
 
 ---
 
 ## What's Next for Sheet Happens
 
-- **AI Survey Analysis** – Parse preference surveys to automatically detect compatible ride partners
-- **Mobile App** – React Native companion for real-time mobile operations
-- **SMS Notifications** – Twilio integration to notify participants of car assignments
-- **Multi-Event Management** – Manage multiple concurrent events from single dashboard
-- **Cost Splitting** – Built-in carpool cost calculator and Venmo integration
-
----
-
-## 🤝 Contributing
-
-Feedback and improvements welcome! Open issues or submit PRs.
-
----
-
-## 📜 License
-
-This project is open source and available under the MIT License.
+Check out [TODO.md](./TODO.md)!
